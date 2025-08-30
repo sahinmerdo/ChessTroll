@@ -21,13 +21,18 @@ app.use(helmet());
 app.use(compression());
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use(express.static('public'));
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/chesstroll';
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ MongoDB bağlantısı başarılı!'))
     .catch(err => console.error('❌ MongoDB bağlantı hatası:', err));
+
+// Ana sayfa route'u
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/chesstroll-multiplayer.html');
+});
 
 // Player Schema
 const playerSchema = new mongoose.Schema({
@@ -363,13 +368,11 @@ app.get('/api/leaderboard', async (req, res) => {
 
 // Sunucu başlat
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
     console.log(`🚀 ChessTroll Server çalışıyor: http://localhost:${PORT}`);
     console.log(`📊 MongoDB: ${MONGODB_URI}`);
 });
 
-
-    
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('Server kapanıyor...');
@@ -378,6 +381,3 @@ process.on('SIGTERM', () => {
         process.exit(0);
     });
 });
-
-
-
