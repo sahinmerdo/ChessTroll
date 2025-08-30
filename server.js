@@ -362,12 +362,14 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 // Sunucu başlat
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 ChessTroll Server çalışıyor: http://localhost:${PORT}`);
     console.log(`📊 MongoDB: ${MONGODB_URI}`);
 });
 
+
+    
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('Server kapanıyor...');
@@ -376,5 +378,6 @@ process.on('SIGTERM', () => {
         process.exit(0);
     });
 });
+
 
 
