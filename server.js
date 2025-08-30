@@ -366,10 +366,10 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
-// Sunucu başlat
+// Sunucu başlat  
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 ChessTroll Server çalışıyor: http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 ChessTroll Server çalışıyor: http://0.0.0.0:${PORT}`);
     console.log(`📊 MongoDB: ${MONGODB_URI}`);
 });
 
