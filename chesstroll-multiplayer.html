@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessTroll.com - Online Multiplayer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 50%, #1a252f 100%);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            max-width: 1200px;
+            width: 100%;
+            border: 2px solid rgba(243, 156, 18, 0.4);
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr 300px 250px;
+            gap: 20px;
+        }
+
+        .main-game-area {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(45deg, #f39c12, #e67e22, #d35400);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-screen {
+            text-align: center;
+            padding: 40px;
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #f39c12;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+
+        .login-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #2196f3, #21cbf3);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .player-info-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .player-info {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .player-info.active {
+            border-color: #f39c12;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .player-info.white-player {
+            background: linear-gradient(135deg, rgba(236, 240, 241, 0.15), rgba(52, 73, 94, 0.7));
+        }
+
+        .player-info.black-player {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.15), rgba(52, 73, 94, 0.7));
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 2px;
+            margin: 10px auto;
+            border: 3px solid #f39c12;
+            border-radius: 8px;
+            background: #8d6e63;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
+        }
+
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .light-square {
+            background-color: #f0d9b5;
+            color: #333;
+        }
+
+        .dark-square {
+            background-color: #b58863;
+            color: #333;
+        }
+
+        .side-panel {
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            height: fit-content;
+        }
+
+        .side-panel h3 {
+            color: #f39c12;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #f39c12;
+            padding-bottom: 5px;
+        }
+
+        .leaderboard {
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            height: fit-content;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .leaderboard-item.current-player {
+            background: rgba(243, 156, 18, 0.3);
+            border: 1px solid #f39c12;
+        }
+
+        .waiting-message {
+            text-align: center;
+            padding: 20px;
+            background: rgba(52, 152, 219, 0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+
+        .game-status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .status-waiting {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .status-playing {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .online-stats {
+            background: rgba(142, 68, 173, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+            
+            .leaderboard, .side-panel {
+                order: 2;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Giriş Ekranı -->
+    <div id="loginScreen" class="login-screen">
+        <h1>♔ ChessTroll.com ♚</h1>
+        <h3>🌍 Online Multiplayer</h3>
+        <p>Dünya çapında binlerce oyuncuyla ChessTroll oyna!</p>
+        
+        <input type="text" id="nickInput" class="login-input" placeholder="Nick giriniz (2-20 karakter)" maxlength="20">
+        <br>
+        <button onclick="joinGame()" class="btn">🎮 Oyuna Katıl</button>
+        
+        <div class="online-stats" id="onlineStats">
+            <div>📊 İstatistikler yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- Ana Oyun Ekranı -->
+    <div id="gameScreen" class="game-container" style="display: none;">
+        <div class="main-game-area">
+            <div class="header">
+                <h1>♔ ChessTroll.com ♚</h1>
+                <div id="gamePhase">Çevrimiçi Oyun</div>
+                <div>Hoşgeldin: <span id="playerNick"></span></div>
+            </div>
+
+            <div id="gameStatus" class="game-status">Rakip aranıyor...</div>
+
+            <div class="player-info-container" id="playerInfoContainer" style="display: none;">
+                <div class="player-info white-player" id="whitePlayerInfo">
+                    <div class="player-name" id="whitePlayerName">♔ Beyaz</div>
+                    <div id="whiteTimer" class="timer-time">10:00</div>
+                    <div class="player-score">Puan: <span id="whiteScore" class="score-value">0.0</span></div>
+                </div>
+                <div class="player-info black-player" id="blackPlayerInfo">
+                    <div class="player-name" id="blackPlayerName">♚ Siyah</div>
+                    <div id="blackTimer" class="timer-time">10:00</div>
+                    <div class="player-score">Puan: <span id="blackScore" class="score-value">0.0</span></div>
+                </div>
+            </div>
+
+            <div class="chess-board" id="chessBoard" style="display: none;"></div>
+
+            <div class="controls">
+                <button onclick="findGame()" class="btn" id="findGameBtn">🔍 Rakip Ara</button>
+                <button onclick="resignGame()" class="btn" id="resignBtn" style="display: none;">🏳️ Pes Et</button>
+                <button onclick="toggleSound()" class="btn" id="soundToggle">🔊 Ses Açık</button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <h3>🎯 ChessTroll Kuralları</h3>
+            <ul style="font-size: 0.85em; line-height: 1.4; margin: 0; padding-left: 15px;">
+                <li><strong>Yerleştirme Fazı:</strong> 2 at, 2 fil, 3 piyon</li>
+                <li><strong>Saldırı Yasağı:</strong> Yerleştirme sırasında</li>
+                <li><strong>Şah→Vezir:</strong> Kaçarak kurtulursa dönüşür</li>
+                <li><strong>Vezir Kuralı:</strong> Yakalandığında oyun biter</li>
+                <li><strong>Süre Bonusu:</strong> Kalan süre puan olur</li>
+                <li><strong>Puanlama:</strong> Yakalanan/Yakalayan oranı</li>
+            </ul>
+        </div>
+
+        <div class="leaderboard">
+            <h3>🏆 Sıralama</h3>
+            <div id="leaderboardList">
+                <div>Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Global değişkenler
+        let socket;
+        let currentGame = null;
+        let playerData = null;
+        let myColor = null;
+        let gamePhase = 'placement';
+        let currentPlayer = 'white';
+        let selectedPieceType = null;
+        let selectedSquare = null;
+        let board = [];
+        let playerTimes = { white: 600, black: 600 };
+        let playerScores = { white: 0, black: 0 };
+        let timerInterval = null;
+        let soundEnabled = true;
+
+        // Socket bağlantısı
+        function initSocket() {
+            socket = io();
+
+            socket.on('connect', () => {
+                console.log('✅ Sunucuya bağlandı');
+                loadOnlineStats();
+            });
+
+            socket.on('disconnect', () => {
+                console.log('❌ Sunucudan koptu');
+                showStatus('Bağlantı koptu! Yeniden bağlanıyor...', 'error');
+            });
+
+            socket.on('error', (message) => {
+                alert('❌ Hata: ' + message);
+            });
+
+            socket.on('player-data', (data) => {
+                playerData = data;
+                document.getElementById('playerNick').textContent = data.nick;
+                showGameScreen();
+            });
+
+            socket.on('waiting-for-opponent', () => {
+                showStatus('🔍 Rakip aranıyor...', 'waiting');
+                document.getElementById('findGameBtn').disabled = true;
+                document.getElementById('findGameBtn').textContent = '⏳ Aranıyor...';
+            });
+
+            socket.on('game-start', (data) => {
+                currentGame = data;
+                myColor = data.color;
+                showStatus(`🎮 Oyun başladı! ${data.opponent} ile oynuyorsunuz`, 'playing');
+                startGame(data);
+            });
+
+            socket.on('opponent-move', (moveData) => {
+                handleOpponentMove(moveData);
+            });
+
+            socket.on('opponent-disconnected', () => {
+                showStatus('Rakip oyunu terk etti. Kazandınız! 🏆', 'playing');
+                endGame();
+            });
+
+            socket.on('game-ended', (data) => {
+                handleGameEnd(data);
+            });
+
+            socket.on('leaderboard-update', (leaderboard) => {
+                updateLeaderboard(leaderboard);
+            });
+        }
+
+        // Oyuna katıl
+        function joinGame() {
+            const nick = document.getElementById('nickInput').value.trim();
+            
+            if (!nick || nick.length < 2 || nick.length > 20) {
+                alert('Nick 2-20 karakter arası olmalı!');
+                return;
+            }
+
+            // IP adresini al (basit IP tespiti)
+            const ip = 'user_' + Math.random().toString(36).substr(2, 9);
+
+            socket.emit('player-join', { nick, ip });
+        }
+
+        // Online istatistikleri yükle
+        function loadOnlineStats() {
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('onlineStats').innerHTML = `
+                        <div>👥 Toplam Oyuncu: ${data.totalPlayers}</div>
+                        <div>🟢 Online: ${data.onlinePlayers}</div>
+                        <div>🎮 Aktif Oyun: ${data.activeGames}</div>
+                        <div>📊 Toplam Oyun: ${data.totalGames}</div>
+                    `;
+                })
+                .catch(err => console.error('Stats error:', err));
+        }
+
+        // Oyun ekranını göster
+        function showGameScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'grid';
+            
+            // Sıralamayı yükle
+            socket.emit('get-leaderboard');
+        }
+
+        // Rakip ara
+        function findGame() {
+            socket.emit('find-game');
+        }
+
+        // Oyunu başlat
+        function startGame(gameData) {
+            document.getElementById('playerInfoContainer').style.display = 'grid';
+            document.getElementById('chessBoard').style.display = 'grid';
+            document.getElementById('findGameBtn').style.display = 'none';
+            document.getElementById('resignBtn').style.display = 'inline-block';
+
+            // Oyuncu isimlerini ayarla
+            if (myColor === 'white') {
+                document.getElementById('whitePlayerName').textContent = `♔ ${playerData.nick} (Sen)`;
+                document.getElementById('blackPlayerName').textContent = `♚ ${gameData.opponent}`;
+            } else {
+                document.getElementById('whitePlayerName').textContent = `♔ ${gameData.opponent}`;
+                document.getElementById('blackPlayerName').textContent = `♚ ${playerData.nick} (Sen)`;
+            }
+
+            // Oyun durumunu başlat
+            initChessTrollGame();
+        }
+
+        // ChessTroll oyununu başlat
+        function initChessTrollGame() {
+            gamePhase = 'placement';
+            currentPlayer = 'white';
+            playerTimes = { white: 600, black: 600 };
+            playerScores = { white: 0, black: 0 };
+            
+            // Başlangıç pozisyonu
+            board = [
+                [null, null, 'r', 'k', 'r', null, null, null],
+                [null, null, 'p', 'p', 'p', null, null, null],
+                [null, null, null, 'p', null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, 'P', null, null, null, null],
+                [null, null, 'P', 'P', 'P', null, null, null],
+                [null, null, 'R', 'K', 'R', null, null, null]
+            ];
+
+            createBoard();
+            startTimer();
+            updateUI();
+
+            if (myColor === 'white') {
+                showStatus('Sıranız! Taş yerleştirin.', 'playing');
+            } else {
+                showStatus('Rakibin sırası...', 'waiting');
+            }
+        }
+
+        // Tahtayı oluştur
+        function createBoard() {
+            const boardElement = document.getElementById('chessBoard');
+            boardElement.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(row + col) % 2 === 0 ? 'light-square' : 'dark-square'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    square.onclick = () => handleSquareClick(row, col);
+                    
+                    const piece = board[row][col];
+                    if (piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.textContent = getPieceSymbol(piece);
+                        square.appendChild(pieceElement);
+                    }
+                    
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        // Taş sembolü al
+        function getPieceSymbol(piece) {
+            const symbols = {
+                'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+                'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+            };
+            return symbols[piece] || piece;
+        }
+
+        // Kare tıklama
+        function handleSquareClick(row, col) {
+            if (!currentGame || (currentPlayer === 'white' && myColor !== 'white') || 
+                (currentPlayer === 'black' && myColor !== 'black')) {
+                return; // Sıran değil
+            }
+
+            // Basit hamle sistemi (gerçek ChessTroll mantığı eklenebilir)
+            const moveData = {
+                from: selectedSquare,
+                to: [row, col],
+                currentPlayer,
+                gamePhase
+            };
+
+            // Hamleyi gönder
+            socket.emit('game-move', {
+                gameId: currentGame.gameId,
+                moveData
+            });
+
+            // Sırayı değiştir
+            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+            updateUI();
+        }
+
+        // Rakip hamlesini işle
+        function handleOpponentMove(moveData) {
+            // Hamleli tahtaya uygula
+            currentPlayer = moveData.currentPlayer === 'white' ? 'black' : 'white';
+            createBoard();
+            updateUI();
+        }
+
+        // Zamanlayıcı
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (currentPlayer === 'white') {
+                    playerTimes.white--;
+                } else {
+                    playerTimes.black--;
+                }
+
+                updateTimerDisplay();
+
+                if (playerTimes.white <= 0 || playerTimes.black <= 0) {
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('whiteTimer').textContent = formatTime(playerTimes.white);
+            document.getElementById('blackTimer').textContent = formatTime(playerTimes.black);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Süre doldu
+        function handleTimeUp() {
+            const winner = playerTimes.white <= 0 ? 'black' : 'white';
+            const whiteTimeBonus = Math.round(playerTimes.white / 10 * 10) / 10;
+            const blackTimeBonus = Math.round(playerTimes.black / 10 * 10) / 10;
+
+            socket.emit('game-end', {
+                gameId: currentGame.gameId,
+                winner,
+                endReason: 'timeout',
+                whiteScore: playerScores.white,
+                blackScore: playerScores.black,
+                whiteTimeBonus,
+                blackTimeBonus
+            });
+        }
+
+        // Oyun sonu
+        function handleGameEnd(data) {
+            clearInterval(timerInterval);
+            
+            let message = '';
+            if (data.winner === myColor) {
+                message = `🏆 Kazandınız! Puanınız: ${data.yourScore}`;
+            } else if (data.winner === 'draw') {
+                message = `🤝 Berabere! Puanınız: ${data.yourScore}`;
+            } else {
+                message = `😞 Kaybettiniz! Puanınız: ${data.yourScore}`;
+            }
+
+            showStatus(message, 'playing');
+            endGame();
+        }
+
+        // Oyunu bitir
+        function endGame() {
+            currentGame = null;
+            document.getElementById('findGameBtn').style.display = 'inline-block';
+            document.getElementById('findGameBtn').disabled = false;
+            document.getElementById('findGameBtn').textContent = '🔍 Rakip Ara';
+            document.getElementById('resignBtn').style.display = 'none';
+            
+            // Sıralamayı güncelle
+            socket.emit('get-leaderboard');
+        }
+
+        // Pes etme
+        function resignGame() {
+            if (!currentGame) return;
+            
+            const winner = myColor === 'white' ? 'black' : 'white';
+            socket.emit('game-end', {
+                gameId: currentGame.gameId,
+                winner,
+                endReason: 'resign',
+                whiteScore: playerScores.white,
+                blackScore: playerScores.black,
+                whiteTimeBonus: 0,
+                blackTimeBonus: 0
+            });
+        }
+
+        // UI güncelle
+        function updateUI() {
+            // Aktif oyuncu vurgusu
+            const whiteInfo = document.getElementById('whitePlayerInfo');
+            const blackInfo = document.getElementById('blackPlayerInfo');
+            
+            whiteInfo.classList.toggle('active', currentPlayer === 'white');
+            blackInfo.classList.toggle('active', currentPlayer === 'black');
+        }
+
+        // Durum göster
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('gameStatus');
+            statusElement.textContent = message;
+            statusElement.className = `game-status status-${type}`;
+        }
+
+        // Sıralamayı güncelle
+        function updateLeaderboard(leaderboard) {
+            const listElement = document.getElementById('leaderboardList');
+            listElement.innerHTML = '';
+
+            leaderboard.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                if (playerData && player.nick === playerData.nick) {
+                    item.classList.add('current-player');
+                }
+
+                item.innerHTML = `
+                    <span>${index + 1}. ${player.nick}</span>
+                    <span>${player.totalScore.toFixed(1)}</span>
+                `;
+                listElement.appendChild(item);
+            });
+        }
+
+        // Ses kontrol
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊 Ses Açık' : '🔇 Ses Kapalı';
+        }
+
+        // Sayfa yüklendiğinde başlat
+        window.onload = function() {
+            initSocket();
+            setInterval(loadOnlineStats, 30000); // 30 saniyede bir güncelle
+        };
+    </script>
+</body>
+</html>
